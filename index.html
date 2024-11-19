@@ -390,7 +390,7 @@
 								Nessun file selezionato
 							</div>
 							<ul class="checklist">
-								<li>Formati accettati: JPG, PNG, PDF</li>
+								<li>Formati accettati: JPG, .JPEG, .JFIF, .PJPEG, .PJP, .WEBP, PNG, PDF</li>
 								<li>Dimensione massima: 5MB</li>
 							</ul>
 						</div>
@@ -416,7 +416,7 @@
 								Nessun file selezionato
 							</div>
 							<ul class="checklist">
-								<li>Formati accettati: JPG, PNG, PDF</li>
+								<li>Formati accettati: JPG, .JPEG, .JFIF, .PJPEG, .PJP, .WEBP, PNG, PDF</li>
 								<li>Dimensione massima: 5MB</li>
 							</ul>
 						</div>
@@ -577,19 +577,21 @@
                         window.scrollTo({ top: 0, behavior: "smooth" });
                         return response.json();
                     } else {
-                        throw new Error("Form submission failed");
+											return response.json().then(errorData => {
+													throw new Error(errorData.message || 'Unknown error');
+											});
                     }
                 })
                 .catch((error) => {
                     notification.style.display = "block";
                     notification.style.backgroundColor = "#fee2e2"; // Light red
-                    notification.textContent = `Submission failed: ${error.message}`;
+                    notification.textContent = `Submission failed: ${error}`;
                     form.reset();
                     resetPreviewFile('identityDocFrontPreview')
                     resetPreviewFile('identityDocBackPreview')
                     resetPreviewFile('selfiePreview')
                     window.scrollTo({ top: 0, behavior: "smooth" });
-                    console.error("Error submitting form:", error);
+                    console.error(error);
                 });
 			});
 		});
