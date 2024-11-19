@@ -1,5 +1,4 @@
-GET /users
-https://primitive-katuscha-giusepp-princi-33015788.koyeb.app/users
+https://jobsprint.koyeb.app/form
 
-POST /submit
-https://primitive-katuscha-giusepp-princi-33015788.koyeb.app/submit
+
+https://jobsprint.koyeb.app/adminpanel
