@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
+	_ "image/png"
+	_ "golang.org/x/image/webp"
 	"io"
 	"log"
 	"net/http"
@@ -130,10 +132,17 @@ func handleFileUpload(r *http.Request, formKey string) (string, error) {
 		return fmt.Sprintf("data:application/pdf;base64,%s", encoded), nil
 	}
 
+	// Reset the file pointer to the start for image decoding
+	// if seeker, ok := file.(io.Seeker); ok {
+	// 	if _, err := seeker.Seek(0, io.SeekStart); err != nil {
+	// 		return "", fmt.Errorf("failed to reset file pointer: %w", err)
+	// 	}
+	// }
+
 	// Handle other file types by converting them to JPEG
-	img, _, err := image.Decode(file) // Decode image file into an image.Image object
+	img, _, err := image.Decode(file)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode image: %w", err)
+		return "", fmt.Errorf("failed to decode %s file: %w", ext, err)
 	}
 
 	// Convert image to JPEG and encode to Base64
