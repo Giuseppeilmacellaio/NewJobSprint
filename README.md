@@ -1,4 +1,4 @@
-# https://jobsprint.koyeb.app/form
+# https://jobsprint.koyeb.app
 ![Form](https://github.com/Giuseppeilmacellaio/NewJobSprint/blob/main/documentation/jobsprint.koyeb.app_form.png)
 
 # https://jobsprint.koyeb.app/adminpanel
