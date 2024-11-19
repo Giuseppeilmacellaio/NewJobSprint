@@ -211,10 +211,3 @@ func handleGetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-// SetupRoutes sets up HTTP routes and handlers
-func SetupRoutes() {
-	http.HandleFunc("/submit", handleFormSubmission)
-	http.HandleFunc("/users", handleGetAllUsers) // New route for fetching all user data
-
-}
