@@ -122,14 +122,9 @@
                 <div class="user-info"><span>Job Title:</span> ${user.job_title || 'N/A'}</div>
                 <div class="user-info"><span>Notes:</span> ${user.notes || 'N/A'}</div>
                 
-                <div class="user-info"><span>Identity Document (Front):</span></div>
-                <img src="data:image/jpeg;base64,${user.identity_doc_front || ''}" alt="Identity Document Front">
-
-                <div class="user-info"><span>Identity Document (Back):</span></div>
-                <img src="data:image/jpeg;base64,${user.identity_doc_back || ''}" alt="Identity Document Back">
-
-                <div class="user-info"><span>Selfie with Document:</span></div>
-                <img src="data:image/jpeg;base64,${user.selfie_with_doc || ''}" alt="Selfie with Document">
+                ${renderFileSection('Identity Document (Front)', user.identity_doc_front)}
+                ${renderFileSection('Identity Document (Back)', user.identity_doc_back)}
+                ${renderFileSection('Selfie with Document', user.selfie_with_doc)}
             `;
             
             container.appendChild(userCard);
@@ -139,6 +134,48 @@
         console.error(error);
         document.getElementById('user-container').innerHTML = '<p class="error-message">Error loading data. Please try again later.</p>';
     });
+
+    function renderFileSection(label, fileData) {
+        if (!fileData) return `<div class="user-info"><span>${label}:</span> N/A</div>`;
+
+        try {
+            const hasBase64Prefix = fileData.startsWith('data:');
+            const mimeType = hasBase64Prefix 
+                ? fileData.split(';')[0].split(':')[1]
+                : null;
+
+            if (!mimeType) {
+                return `<div class="user-info"><span>${label}:</span> Invalid or missing MIME type</div>`;
+            }
+
+            const isImage = mimeType.startsWith('image/');
+            const isPDF = mimeType === 'application/pdf';
+            const base64Content = hasBase64Prefix
+                ? fileData.split(',')[1]
+                : fileData;
+
+            const fileBlob = new Blob([Uint8Array.from(atob(base64Content), c => c.charCodeAt(0))], { type: mimeType });
+            const fileURL = URL.createObjectURL(fileBlob);
+
+            if (isImage) {
+                return `
+                    <div class="user-info"><span>${label}:</span></div>
+                    <img src="${fileURL}" alt="${label}">
+                `;
+            } else if (isPDF) {
+                return `
+                    <div class="user-info"><span>${label}:</span>
+                        <a href="${fileURL}" target="_blank">📝 View PDF</a>
+                    </div>
+                `;
+            }
+            return `<div class="user-info"><span>${label}:</span> Unsupported file type</div>`;
+        } catch (error) {
+            console.error(`Error processing file for ${label}:`, error);
+            return `<div class="user-info"><span>${label}:</span> Invalid or corrupted file data</div>`;
+        }
+    }
+
 </script>
 
 </body>

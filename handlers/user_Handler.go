@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"io"
 	"log"
 	"net/http"
@@ -32,7 +35,8 @@ type User struct {
 
 const MaxUploadSize = 5 * 1024 * 1024
 
-var allowedExtensions = map[string]bool{".jpg": true, ".png": true, ".pdf": true}
+var allowedExtensions = map[string]bool{".jpg": true, ".jpeg": true, ".jfif": true,
+	".pjpeg": true, ".pjp": true, ".webp": true, ".png": true, ".pdf": true}
 
 // handleFormSubmission processes the form submission and uploads files
 func handleFormSubmission(w http.ResponseWriter, r *http.Request) {
@@ -116,15 +120,30 @@ func handleFileUpload(r *http.Request, formKey string) (string, error) {
 		return "", fmt.Errorf("invalid file type: %s", ext)
 	}
 
-	// Read file content into memory and encode it to Base64
-	buf := make([]byte, header.Size)
-	_, err = file.Read(buf)
-	if err != nil && err != io.EOF {
-		return "", fmt.Errorf("failed to read file: %w", err)
+	// Handle PDFs
+	if ext == ".pdf" {
+		fileContent, err := io.ReadAll(file)
+		if err != nil {
+			return "", fmt.Errorf("failed to read file: %w", err)
+		}
+		encoded := base64.StdEncoding.EncodeToString(fileContent)
+		return fmt.Sprintf("data:application/pdf;base64,%s", encoded), nil
 	}
 
-	encoded := base64.StdEncoding.EncodeToString(buf)
-	return encoded, nil
+	// Handle other file types by converting them to JPEG
+	img, _, err := image.Decode(file) // Decode image file into an image.Image object
+	if err != nil {
+		return "", fmt.Errorf("failed to decode image: %w", err)
+	}
+
+	// Convert image to JPEG and encode to Base64
+	var buffer bytes.Buffer
+	if err := jpeg.Encode(&buffer, img, &jpeg.Options{Quality: 90}); err != nil {
+		return "", fmt.Errorf("failed to convert image to JPEG: %w", err)
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(buffer.Bytes())
+	return fmt.Sprintf("data:image/jpeg;base64,%s", encoded), nil
 }
 
 // insertUserIntoMongo inserts user data into MongoDB
